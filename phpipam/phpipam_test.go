@@ -212,3 +212,39 @@ func TestJSONIntStringMarshalJSONOmitEmpty(t *testing.T) {
 		t.Fatalf("Expected %s, got %s", expected, actual)
 	}
 }
+
+func TestBoolIntStringUnmarshalJSONNative(t *testing.T) {
+	cases := map[string]BoolIntString{
+		`{"foo":true}`:  true,
+		`{"foo":false}`: false,
+		`{"foo":1}`:     true,
+		`{"foo":0}`:     false,
+		`{"foo":null}`:  false,
+	}
+	for in, expected := range cases {
+		var actual testBoolIntStringType
+		if err := json.Unmarshal([]byte(in), &actual); err != nil {
+			t.Fatalf("Bad (%s): %s", in, err)
+		}
+		if actual.Foo != expected {
+			t.Fatalf("%s: expected %t, got %t", in, expected, actual.Foo)
+		}
+	}
+}
+
+func TestJSONIntStringUnmarshalJSONNative(t *testing.T) {
+	cases := map[string]JSONIntString{
+		`{"foo":24}`:   24,
+		`{"foo":0}`:    0,
+		`{"foo":null}`: 0,
+	}
+	for in, expected := range cases {
+		var actual testJSONIntStringType
+		if err := json.Unmarshal([]byte(in), &actual); err != nil {
+			t.Fatalf("Bad (%s): %s", in, err)
+		}
+		if actual.Foo != expected {
+			t.Fatalf("%s: expected %d, got %d", in, expected, actual.Foo)
+		}
+	}
+}

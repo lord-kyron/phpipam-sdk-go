@@ -100,15 +100,18 @@ func (bis BoolIntString) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON implements json.Unmarshaler for the BoolIntString type.
+//
+// Native JSON booleans and numbers (as returned by phpIPAM on PHP 8) are
+// accepted in addition to their stringified forms.
 func (bis *BoolIntString) UnmarshalJSON(b []byte) error {
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
+	s, err := unquoteScalar(b)
+	if err != nil {
 		return err
 	}
 	switch s {
-	case "0", "":
+	case "0", "", "false":
 		*bis = false
-	case "1":
+	case "1", "true":
 		*bis = true
 	default:
 		return &json.UnmarshalTypeError{
@@ -118,6 +121,27 @@ func (bis *BoolIntString) UnmarshalJSON(b []byte) error {
 	}
 
 	return nil
+}
+
+// unquoteScalar returns the string form of a JSON string, number, boolean or
+// null value. null is returned as the empty string.
+func unquoteScalar(b []byte) (string, error) {
+	var v interface{}
+	if err := json.Unmarshal(b, &v); err != nil {
+		return "", err
+	}
+	switch t := v.(type) {
+	case nil:
+		return "", nil
+	case string:
+		return t, nil
+	case bool, float64:
+		return string(b), nil
+	}
+	return "", &json.UnmarshalTypeError{
+		Value: string(b),
+		Type:  reflect.TypeOf(""),
+	}
 }
 
 // JSONIntString is a type for representing an IntString JSON value, but with
@@ -130,9 +154,12 @@ func (jis JSONIntString) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON implements json.Unmarshaler for the JSONIntString type.
+//
+// Native JSON numbers (as returned by phpIPAM on PHP 8) are accepted in
+// addition to their stringified forms.
 func (jis *JSONIntString) UnmarshalJSON(b []byte) error {
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
+	s, err := unquoteScalar(b)
+	if err != nil {
 		return err
 	}
 	if s == "" {
