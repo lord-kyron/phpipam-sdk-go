@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"net"
+	"net/url"
 
 	"github.com/pavel-z1/phpipam-sdk-go/controllers/subnets"
 	"github.com/pavel-z1/phpipam-sdk-go/phpipam/client"
@@ -34,14 +35,20 @@ func NewController(sess *session.Session) *Controller {
 	return c
 }
 
-// SearchSubnets searches for subnets in the phpIPAM database.
+// SearchSubnets searches for subnets in the phpIPAM database. An empty slice
+// is returned when nothing matches.
 //
 // This requires PHPIPAM 1.6 or higher.
 func (c *Controller) SearchSubnets(searchString string) (out []subnets.Subnet, err error) {
 	var result subnetSearchResult
-	err = c.SendRequest("GET", fmt.Sprintf("/search/%s/?addresses=0&subnets=1&vlans=0&vrfs=0", searchString), &struct{}{}, &result)
+	err = c.SendRequest("GET", fmt.Sprintf("/search/%s/?addresses=0&subnets=1&vlans=0&vrfs=0", url.PathEscape(searchString)), &struct{}{}, &result)
 	if err != nil {
 		return
+	}
+
+	// phpIPAM reports an empty search result with code 404.
+	if result.Subnets.Code == 404 {
+		return []subnets.Subnet{}, nil
 	}
 
 	if result.Subnets.Code != 200 {
