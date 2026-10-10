@@ -20,19 +20,18 @@ const DefaultTimeout = 60 * time.Second
 
 // Config contains the configuration for connecting to the PHPIPAM API.
 //
-//
-// Supplying Configuration to Controllers
+// # Supplying Configuration to Controllers
 //
 // All controller constructors (ie: VLANs, subnets, addresses, etc) take zero or
 // more of these structs as configuration, like so:
 //
-//   cfg := phpipam.Config{
-//     Username:     "jdoe",
-//     Password:     "password",
-//     AppID:        "appid",
-//   }
-//   sess := session.New(cfg)
-//   ctlr := ipaddr.New(sess)
+//	cfg := phpipam.Config{
+//	  Username:     "jdoe",
+//	  Password:     "password",
+//	  AppID:        "appid",
+//	}
+//	sess := session.New(cfg)
+//	ctlr := ipaddr.New(sess)
 //
 // Note that default options are set for EmailAddress, Password, and AppKey.
 // See the DefaultConfigProvider method for more details.
@@ -59,10 +58,10 @@ type Config struct {
 }
 
 // DefaultConfigProvider supplies a default configuration:
-//  * AppID defaults to PHPIPAM_APP_ID, if set, otherwise empty
-//  * Endpoint defaults to PHPIPAM_ENDPOINT_ADDR, otherwise http://localhost/api
-//  * Password defaults to PHPIPAM_PASSWORD, if set, otherwise empty
-//  * Username defaults to PHPIPAM_USER_NAME, if set, otherwise empty
+//   - AppID defaults to PHPIPAM_APP_ID, if set, otherwise empty
+//   - Endpoint defaults to PHPIPAM_ENDPOINT_ADDR, otherwise http://localhost/api
+//   - Password defaults to PHPIPAM_PASSWORD, if set, otherwise empty
+//   - Username defaults to PHPIPAM_USER_NAME, if set, otherwise empty
 //
 // This essentially loads an initial config state for any given
 // API service.

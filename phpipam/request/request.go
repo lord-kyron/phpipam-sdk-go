@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -161,7 +161,7 @@ func newRequestResponse(r *http.Response) *requestResponse {
 		Status:     r.Status,
 	}
 	defer r.Body.Close()
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	log.Debugf("Response Body Debug ................... %s", body)
 	if err != nil {
 		panic(err)
