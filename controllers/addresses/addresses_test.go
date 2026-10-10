@@ -589,3 +589,36 @@ func TestAccAddressCustomFieldUpdateRead(t *testing.T) {
 	// clean up
 	testAccAddressCRUDDelete(t, sess, address)
 }
+
+func TestGetAddressesByTag(t *testing.T) {
+	for name, tc := range map[string]struct {
+		call func(*Controller) ([]Address, error)
+		uri  string
+	}{
+		"all":    {func(c *Controller) ([]Address, error) { return c.GetAddressesByTag(2) }, "/0123456789abcdefgh/addresses/tags/2/addresses/"},
+		"subnet": {func(c *Controller) ([]Address, error) { return c.GetAddressesByTagInSubnet(2, 3) }, "/0123456789abcdefgh/addresses/tags/2/addresses/?subnetId=3"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var uri string
+			ts := newHTTPTestServer(func(w http.ResponseWriter, r *http.Request) {
+				uri = r.URL.RequestURI()
+				w.Header().Add("Content-Type", "application/json")
+				http.Error(w, testGetAddressesByIPOutputJSON, http.StatusOK)
+			})
+			defer ts.Close()
+			sess := fullSessionConfig()
+			sess.Config.Endpoint = ts.URL
+
+			actual, err := tc.call(NewController(sess))
+			if err != nil {
+				t.Fatalf("Bad: %s", err)
+			}
+			if uri != tc.uri {
+				t.Fatalf("Expected request to %s, got %s", tc.uri, uri)
+			}
+			if !reflect.DeepEqual(testGetAddressesByIPOutputExpected, actual) {
+				t.Fatalf("Expected %#v, got %#v", testGetAddressesByIPOutputExpected, actual)
+			}
+		})
+	}
+}

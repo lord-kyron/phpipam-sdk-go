@@ -120,6 +120,20 @@ func (c *Controller) GetAddressesByIpInSubnet(ipaddr string, subnetID int) (out 
 	return
 }
 
+// GetAddressesByTag GETs all IP addresses that have the supplied tag (address
+// state) ID. See the tags controller for the available tags.
+func (c *Controller) GetAddressesByTag(tagID int) (out []Address, err error) {
+	err = c.SendRequest("GET", fmt.Sprintf("/addresses/tags/%d/addresses/", tagID), &struct{}{}, &out)
+	return
+}
+
+// GetAddressesByTagInSubnet GETs all IP addresses in a subnet that have the
+// supplied tag (address state) ID.
+func (c *Controller) GetAddressesByTagInSubnet(tagID int, subnetID int) (out []Address, err error) {
+	err = c.SendRequest("GET", fmt.Sprintf("/addresses/tags/%d/addresses/?subnetId=%d", tagID, subnetID), &struct{}{}, &out)
+	return
+}
+
 // GetAddressCustomFieldsSchema GETs the custom fields for the addresses controller via
 // client.GetCustomFieldsSchema.
 func (c *Controller) GetAddressCustomFieldsSchema() (out map[string]phpipam.CustomField, err error) {

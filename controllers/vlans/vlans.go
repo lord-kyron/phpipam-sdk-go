@@ -52,6 +52,12 @@ func NewController(sess *session.Session) *Controller {
 	return c
 }
 
+// ListVLANs lists all VLANs.
+func (c *Controller) ListVLANs() (out []VLAN, err error) {
+	err = c.SendRequest("GET", "/vlans/", &struct{}{}, &out)
+	return
+}
+
 // CreateVLAN creates a VLAN by sending a POST request.
 func (c *Controller) CreateVLAN(in VLAN) (message string, err error) {
 	err = c.SendRequest("POST", "/vlans/", &in, &message)
