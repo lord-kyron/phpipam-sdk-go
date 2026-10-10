@@ -3,7 +3,6 @@ package request
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -179,16 +178,7 @@ func newRequestResponse(r *http.Response) *requestResponse {
 func (r *Request) Send() error {
 	var req *http.Request
 	var err error
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: r.Session.Config.Insecure},
-		Proxy:           http.ProxyFromEnvironment,
-	}
-	client := &http.Client{
-		Transport: tr,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-	}
+	client := r.Session.HTTPClient()
 
 	switch r.Method {
 	case "OPTIONS", "POST", "PUT", "PATCH", "DELETE":

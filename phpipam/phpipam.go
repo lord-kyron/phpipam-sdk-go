@@ -8,10 +8,15 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // The default PHPIPAM API endpoint.
 const defaultAPIAddress = "http://localhost/api"
+
+// DefaultTimeout is the HTTP request timeout used when Config.Timeout is not
+// set.
+const DefaultTimeout = 60 * time.Second
 
 // Config contains the configuration for connecting to the PHPIPAM API.
 //
@@ -47,6 +52,10 @@ type Config struct {
 
 	// Allow HTTPS connection without verification issuer
 	Insecure bool
+
+	// The timeout for each HTTP request made to the API. Defaults to
+	// DefaultTimeout when zero.
+	Timeout time.Duration
 }
 
 // DefaultConfigProvider supplies a default configuration:
