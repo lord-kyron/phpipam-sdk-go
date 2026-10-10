@@ -2,6 +2,7 @@ package phpipam
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"testing"
 )
@@ -102,10 +103,11 @@ func TestBoolIntStringUnmarshalJSONError(t *testing.T) {
 		t.Fatalf("Expected error, got none")
 	}
 
-	expected := "json: cannot unmarshal bool into Go struct field testBoolIntStringType.foo of type string"
-	actual := err.Error()
-	if expected != actual {
-		t.Fatalf("Expected %s, got %s", expected, actual)
+	// The error text produced by encoding/json differs between Go versions, so
+	// check the error type and value instead.
+	var typeErr *json.UnmarshalTypeError
+	if !errors.As(err, &typeErr) || typeErr.Value != "bool" {
+		t.Fatalf("Expected an UnmarshalTypeError for value bool, got %#v", err)
 	}
 }
 
@@ -176,10 +178,11 @@ func TestJSONIntStringUnmarshalJSONError(t *testing.T) {
 		t.Fatalf("Expected error, got none")
 	}
 
-	expected := "json: cannot unmarshal int into Go struct field testJSONIntStringType.foo of type string"
-	actual := err.Error()
-	if expected != actual {
-		t.Fatalf("Expected %s, got %s", expected, actual)
+	// The error text produced by encoding/json differs between Go versions, so
+	// check the error type and value instead.
+	var typeErr *json.UnmarshalTypeError
+	if !errors.As(err, &typeErr) || typeErr.Value != "int" {
+		t.Fatalf("Expected an UnmarshalTypeError for value int, got %#v", err)
 	}
 }
 
