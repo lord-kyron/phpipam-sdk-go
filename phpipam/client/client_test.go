@@ -496,3 +496,26 @@ func TestGetCustomFieldsRequest(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateCustomFieldsEmptyInput(t *testing.T) {
+	ts := newHTTPTestServer(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		if r.Method == "GET" {
+			http.Error(w, testCustomFieldsSchemaResponseText, http.StatusOK)
+			return
+		}
+		http.Error(w, testUpdateCustomFieldsRequestResponseText, http.StatusOK)
+	})
+	defer ts.Close()
+	sess := fullSessionConfig()
+	sess.Config.Endpoint = ts.URL
+	client := NewClient(sess)
+
+	actual, err := client.UpdateCustomFields(3, map[string]interface{}{}, "subnets")
+	if err != nil {
+		t.Fatalf("Bad: %s", err)
+	}
+	if actual != testUpdateCustomFieldsRequestExpected {
+		t.Fatalf("Expected %q, got %q", testUpdateCustomFieldsRequestExpected, actual)
+	}
+}

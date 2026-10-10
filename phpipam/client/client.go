@@ -175,7 +175,7 @@ func (c *Client) UpdateCustomFields(id int, in map[string]interface{}, controlle
 	schema, err = c.GetCustomFieldsSchema(controller)
 	switch {
 	// Ignore this error if the caller is not setting any fields.
-	case len(in) == 0 && err.Error() == "Error from API (200): No custom fields defined":
+	case err != nil && len(in) == 0 && err.Error() == "Error from API (200): No custom fields defined":
 		err = nil
 		return
 	case err != nil:
