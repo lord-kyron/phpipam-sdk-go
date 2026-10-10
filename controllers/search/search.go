@@ -5,8 +5,8 @@ package search
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net"
-	"strconv"
 
 	"github.com/pavel-z1/phpipam-sdk-go/controllers/subnets"
 	"github.com/pavel-z1/phpipam-sdk-go/phpipam/client"
@@ -58,13 +58,36 @@ func (c *Controller) SearchSubnets(searchString string) (out []subnets.Subnet, e
 
 	// For some reason, subnet addresses are returned as integers: https://github.com/phpipam/phpipam/issues/4159
 	for i := range out {
-		ip_integer, err := strconv.Atoi(out[i].SubnetAddress)
+		ip, err := integerToIP(out[i].SubnetAddress)
 		if err != nil {
 			return out, err
 		}
-		ip := net.IPv4(byte(ip_integer>>24), byte(ip_integer>>16), byte(ip_integer>>8), byte(ip_integer))
-		out[i].SubnetAddress = ip.String()
+		out[i].SubnetAddress = ip
 	}
 
 	return
+}
+
+// maxIPv4 is the largest integer representation of an IPv4 address.
+var maxIPv4 = big.NewInt(0xFFFFFFFF)
+
+// integerToIP converts the decimal integer representation of an IP address,
+// as returned by the search controller, to its textual form. Following
+// phpIPAM's own identify_address logic, values up to 2^32-1 are treated as
+// IPv4 and larger values as IPv6. Addresses that are already in textual form
+// are returned unchanged.
+func integerToIP(s string) (string, error) {
+	if ip := net.ParseIP(s); ip != nil {
+		return ip.String(), nil
+	}
+	n, ok := new(big.Int).SetString(s, 10)
+	if !ok || n.Sign() < 0 || n.BitLen() > 128 {
+		return "", fmt.Errorf("invalid integer IP address %q", s)
+	}
+	if n.Cmp(maxIPv4) <= 0 {
+		b := make([]byte, 4)
+		return net.IP(n.FillBytes(b)).String(), nil
+	}
+	b := make([]byte, 16)
+	return net.IP(n.FillBytes(b)).String(), nil
 }

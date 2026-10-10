@@ -97,3 +97,30 @@ func TestSearch(t *testing.T) {
 		t.Fatalf("Expected %#v, got %#v", expected, actual)
 	}
 }
+
+func TestIntegerToIP(t *testing.T) {
+	cases := map[string]string{
+		"0":                                      "0.0.0.0",
+		"168099840":                              "10.5.0.0",
+		"4294967295":                             "255.255.255.255",
+		"42540766411282592856903984951653826560": "2001:db8::",
+		"340282366920938463463374607431768211455": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+		"10.5.0.0":   "10.5.0.0",
+		"2001:db8::": "2001:db8::",
+	}
+	for in, expected := range cases {
+		actual, err := integerToIP(in)
+		if err != nil {
+			t.Fatalf("%s: unexpected error: %s", in, err)
+		}
+		if actual != expected {
+			t.Fatalf("%s: expected %s, got %s", in, expected, actual)
+		}
+	}
+
+	for _, in := range []string{"", "abc", "-1", "340282366920938463463374607431768211456"} {
+		if _, err := integerToIP(in); err == nil {
+			t.Fatalf("%q: expected error, got none", in)
+		}
+	}
+}
